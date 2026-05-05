@@ -16,6 +16,11 @@ def _resolve_directory_path(directory: str) -> str:
     candidates = []
 
     raw = directory or "."
+    workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "workspace"))
+
+    if raw in (".", "./", ""):
+        return workspace_root
+
     expanded = os.path.expanduser(raw)
     if os.path.isabs(expanded):
         candidates.append(expanded)
@@ -119,7 +124,9 @@ async def get_document_outline(filename: str) -> str:
 
 async def list_available_documents(directory: str = ".") -> str:
     """List all .docx files in the specified directory.
-    
+
+    Defaults to the project workspace directory when directory is ".".
+
     Args:
         directory: Directory to search for Word documents
     """

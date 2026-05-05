@@ -152,7 +152,7 @@ def register_tools():
         ),
     )
     def list_available_documents(directory: str = "."):
-        """List all .docx files in the specified directory."""
+        """List all .docx files in a directory. Defaults to ./workspace when directory is \".\"."""
         return document_tools.list_available_documents(directory)
     
     @mcp.tool(
