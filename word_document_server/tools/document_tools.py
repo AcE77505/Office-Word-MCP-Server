@@ -3,6 +3,7 @@ Document creation and manipulation tools for Word Document Server.
 """
 import os
 import json
+from datetime import datetime
 from typing import Dict, List, Optional, Any
 from docx import Document
 
@@ -16,11 +17,6 @@ def _resolve_directory_path(directory: str) -> str:
     candidates = []
 
     raw = directory or "."
-    workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "workspace"))
-
-    if raw in (".", "./", ""):
-        return workspace_root
-
     expanded = os.path.expanduser(raw)
     if os.path.isabs(expanded):
         candidates.append(expanded)
@@ -122,13 +118,13 @@ async def get_document_outline(filename: str) -> str:
     return json.dumps(structure, indent=2)
 
 
-async def list_available_documents(directory: str = ".") -> str:
-    """List all .docx files in the specified directory.
-
-    Defaults to the project workspace directory when directory is ".".
+async def list_available_documents(directory: str = ".", recursive: bool = False, include_non_docx: bool = False) -> str:
+    """List files in a directory with optional recursion and type filtering.
 
     Args:
-        directory: Directory to search for Word documents
+        directory: Directory to scan. Defaults to current working directory.
+        recursive: Whether to recursively scan subdirectories.
+        include_non_docx: Whether to include non-.docx files in results.
     """
     try:
         resolved_directory = _resolve_directory_path(directory)
@@ -139,18 +135,53 @@ async def list_available_documents(directory: str = ".") -> str:
         if not os.path.isdir(resolved_directory):
             return f"Directory {directory} does not exist (resolved path: {resolved_directory})"
 
-        docx_files = [f for f in os.listdir(resolved_directory) if f.lower().endswith('.docx')]
-        
-        if not docx_files:
-            return f"No Word documents found in {resolved_directory}"
+        files = []
+        if recursive:
+            for root, _, filenames in os.walk(resolved_directory):
+                for filename in filenames:
+                    files.append(os.path.join(root, filename))
+        else:
+            for filename in os.listdir(resolved_directory):
+                file_path = os.path.join(resolved_directory, filename)
+                if os.path.isfile(file_path):
+                    files.append(file_path)
 
-        result = f"Found {len(docx_files)} Word documents in {resolved_directory}:\n"
-        for file in docx_files:
-            file_path = os.path.join(resolved_directory, file)
-            size = os.path.getsize(file_path) / 1024  # KB
-            result += f"- {file} ({size:.2f} KB)\n"
-        
-        return result
+        if not files:
+            return f"No files found in {resolved_directory}"
+
+        docx_files = [f for f in files if f.lower().endswith('.docx')]
+        target_files = files if include_non_docx else docx_files
+
+        if not target_files:
+            return f"No Word documents (.docx) found in {resolved_directory}"
+
+        result = [
+            f"Found {len(target_files)} file(s) in {resolved_directory}:",
+            f"- recursive: {recursive}",
+            f"- include_non_docx: {include_non_docx}",
+        ]
+
+        for file_path in sorted(target_files):
+            filename = os.path.basename(file_path)
+            size_kb = os.path.getsize(file_path) / 1024
+            modified = datetime.fromtimestamp(os.path.getmtime(file_path)).strftime('%Y-%m-%d %H:%M:%S')
+            ext = os.path.splitext(filename)[1].lower()
+            rel_path = os.path.relpath(file_path, resolved_directory)
+
+            if ext == '.docx':
+                kind = 'docx'
+            elif ext == '.doc':
+                kind = 'doc'
+            elif ext == '.txt':
+                kind = 'txt'
+            else:
+                kind = f"non-Word ({ext if ext else 'no extension'})"
+
+            result.append(
+                f"- {filename} | path: {rel_path} | size: {size_kb:.2f} KB | type: {kind} | modified: {modified}"
+            )
+
+        return "\n".join(result)
     except Exception as e:
         return f"Failed to list documents: {str(e)}"
 

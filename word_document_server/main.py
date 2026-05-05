@@ -151,9 +151,9 @@ def register_tools():
             readOnlyHint=True,
         ),
     )
-    def list_available_documents(directory: str = "."):
-        """List all .docx files in a directory. Defaults to ./workspace when directory is \".\"."""
-        return document_tools.list_available_documents(directory)
+    def list_available_documents(directory: str = ".", recursive: bool = False, include_non_docx: bool = False):
+        """List files in a directory. Defaults to current working directory; optional recursive scan and non-docx listing."""
+        return document_tools.list_available_documents(directory, recursive, include_non_docx)
     
     @mcp.tool(
         annotations=ToolAnnotations(
