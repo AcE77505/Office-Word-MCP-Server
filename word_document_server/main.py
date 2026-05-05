@@ -22,7 +22,8 @@ from word_document_server.tools import (
     protection_tools,
     footnote_tools,
     extended_document_tools,
-    comment_tools
+    comment_tools,
+    layout_tools
 )
 from word_document_server.tools.content_tools import replace_paragraph_block_below_header_tool
 from word_document_server.tools.content_tools import replace_block_between_manual_anchors_tool
@@ -694,6 +695,64 @@ def register_tools():
         return format_tools.set_table_cell_padding(filename, table_index, row_index, col_index,
                                                    top, bottom, left, right, unit)
 
+
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Set Paragraph Layout",
+        ),
+    )
+    def set_paragraph_layout(filename: str, paragraph_index: int, line_spacing: float = None, first_line_indent_pt: float = None):
+        """Set paragraph line spacing and first-line indent (points)."""
+        return layout_tools.set_paragraph_layout(filename, paragraph_index, line_spacing, first_line_indent_pt)
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Get Paragraph Layout",
+            readOnlyHint=True,
+        ),
+    )
+    def get_paragraph_layout(filename: str, paragraph_index: int):
+        """Get paragraph spacing/indent layout info."""
+        return layout_tools.get_paragraph_layout(filename, paragraph_index)
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Set Page Setup",
+        ),
+    )
+    def set_page_setup(filename: str, section_index: int = 0, top_margin_pt: float = None, bottom_margin_pt: float = None, left_margin_pt: float = None, right_margin_pt: float = None, page_width_pt: float = None, page_height_pt: float = None):
+        """Set margins and paper size for a section (points)."""
+        return layout_tools.set_page_setup(filename, section_index, top_margin_pt, bottom_margin_pt, left_margin_pt, right_margin_pt, page_width_pt, page_height_pt)
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Get Page Setup",
+            readOnlyHint=True,
+        ),
+    )
+    def get_page_setup(filename: str, section_index: int = 0):
+        """Get margins and paper size for a section."""
+        return layout_tools.get_page_setup(filename, section_index)
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Set Header Footer",
+        ),
+    )
+    def set_header_footer(filename: str, text: str, section_index: int = 0, target: str = "header", clear_existing: bool = True):
+        """Set header or footer text for a section."""
+        return layout_tools.set_header_footer(filename, text, section_index, target, clear_existing)
+
+    @mcp.tool(
+        annotations=ToolAnnotations(
+            title="Get Header Footer",
+            readOnlyHint=True,
+        ),
+    )
+    def get_header_footer(filename: str, section_index: int = 0, target: str = "header"):
+        """Get header or footer text for a section."""
+        return layout_tools.get_header_footer(filename, section_index, target)
 
 
 def run_server():
