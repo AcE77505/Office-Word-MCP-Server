@@ -11,6 +11,35 @@ from word_document_server.utils.document_utils import get_document_properties, e
 from word_document_server.core.styles import ensure_heading_style, ensure_table_style
 
 
+def _resolve_directory_path(directory: str) -> str:
+    """Resolve a directory argument against common working locations."""
+    candidates = []
+
+    raw = directory or "."
+    expanded = os.path.expanduser(raw)
+    if os.path.isabs(expanded):
+        candidates.append(expanded)
+    else:
+        candidates.extend([
+            expanded,
+            os.path.join(os.getcwd(), expanded),
+            os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", expanded),
+            os.path.join(os.path.abspath(os.path.dirname(__file__)), "..", "..", "workspace", expanded),
+        ])
+
+    normalized = []
+    for candidate in candidates:
+        abs_candidate = os.path.abspath(candidate)
+        if abs_candidate not in normalized:
+            normalized.append(abs_candidate)
+
+    for candidate in normalized:
+        if os.path.isdir(candidate):
+            return candidate
+
+    return os.path.abspath(expanded)
+
+
 async def create_document(filename: str, title: Optional[str] = None, author: Optional[str] = None) -> str:
     """Create a new Word document with optional metadata.
     
@@ -95,17 +124,22 @@ async def list_available_documents(directory: str = ".") -> str:
         directory: Directory to search for Word documents
     """
     try:
-        if not os.path.exists(directory):
-            return f"Directory {directory} does not exist"
-        
-        docx_files = [f for f in os.listdir(directory) if f.endswith('.docx')]
+        resolved_directory = _resolve_directory_path(directory)
+
+        if os.path.isfile(resolved_directory):
+            resolved_directory = os.path.dirname(resolved_directory)
+
+        if not os.path.isdir(resolved_directory):
+            return f"Directory {directory} does not exist (resolved path: {resolved_directory})"
+
+        docx_files = [f for f in os.listdir(resolved_directory) if f.lower().endswith('.docx')]
         
         if not docx_files:
-            return f"No Word documents found in {directory}"
-        
-        result = f"Found {len(docx_files)} Word documents in {directory}:\n"
+            return f"No Word documents found in {resolved_directory}"
+
+        result = f"Found {len(docx_files)} Word documents in {resolved_directory}:\n"
         for file in docx_files:
-            file_path = os.path.join(directory, file)
+            file_path = os.path.join(resolved_directory, file)
             size = os.path.getsize(file_path) / 1024  # KB
             result += f"- {file} ({size:.2f} KB)\n"
         
