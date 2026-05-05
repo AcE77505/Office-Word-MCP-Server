@@ -17,8 +17,8 @@ if (Test-Path $venvPython) {
 } elseif (Get-Command py -ErrorAction SilentlyContinue) {
     $pythonCmd = "py"
 } else {
-    Write-Host "未找到 Python。请先安装 Python 3.11+，或在项目目录创建 .venv。" -ForegroundColor Red
-    Read-Host "按回车退出"
+    Write-Host "Python not found. Install Python 3.11+ or create .venv in this project." -ForegroundColor Red
+    Read-Host "Press Enter to exit"
     exit 1
 }
 
@@ -27,16 +27,16 @@ $env:MCP_HOST = $HostAddress
 $env:MCP_PORT = "$Port"
 $env:MCP_PATH = $Path
 
-Write-Host "启动 Office Word MCP Server..." -ForegroundColor Cyan
+Write-Host "Starting Office Word MCP Server..." -ForegroundColor Cyan
 Write-Host "Transport : $env:MCP_TRANSPORT"
 Write-Host "Endpoint  : http://$HostAddress`:$Port$Path"
-Write-Host "局域网访问请将 HostAddress 设为 0.0.0.0，并开放防火墙端口。" -ForegroundColor Yellow
+Write-Host "For LAN access, keep HostAddress=0.0.0.0 and allow this port in firewall." -ForegroundColor Yellow
 Write-Host ""
 
 & $pythonCmd "$PSScriptRoot\word_mcp_server.py"
 
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "服务异常退出，退出码: $LASTEXITCODE" -ForegroundColor Red
+    Write-Host "Server exited with code: $LASTEXITCODE" -ForegroundColor Red
 }
 
-Read-Host "服务已停止。按回车退出"
+Read-Host "Server stopped. Press Enter to exit"
