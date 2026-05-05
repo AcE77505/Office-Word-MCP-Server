@@ -150,6 +150,30 @@ Alternatively, you can use the provided setup script which handles:
 python setup_mcp.py
 ```
 
+
+## Windows 一键启动（双击）
+
+项目根目录提供了以下启动脚本：
+
+- `start-word-mcp.bat`（推荐双击这个）
+- `start-word-mcp.ps1`
+
+默认会以 `streamable-http` 方式启动，并监听：
+
+- `MCP_HOST=0.0.0.0`
+- `MCP_PORT=8000`
+- `MCP_PATH=/mcp`
+
+即默认地址为：`http://<你的局域网IP>:8000/mcp`。
+
+> 首次使用请确保已安装依赖，且防火墙已放行对应端口。
+
+你也可以在 PowerShell 中自定义启动参数：
+
+```powershell
+.\start-word-mcp.ps1 -HostAddress 0.0.0.0 -Port 8000 -Path /mcp
+```
+
 ## Usage with Claude for Desktop
 
 ### Configuration

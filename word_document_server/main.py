@@ -40,11 +40,14 @@ def get_transport_config():
         'host': '0.0.0.0',
         'port': 8000,
         'path': '/mcp',
-        'sse_path': '/sse'
+        'sse_path': '/sse',
+        'debug': os.getenv('MCP_DEBUG', 'false').lower() == 'true'
     }
     
     # Override with environment variables if provided
     transport = os.getenv('MCP_TRANSPORT', 'stdio').lower()
+    if transport in ('http', 'streamable_http', 'streamablehttp'):
+        transport = 'streamable-http'
     print(f"Transport: {transport}")
     # Validate transport type
     valid_transports = ['stdio', 'streamable-http', 'sse']
