@@ -174,11 +174,7 @@ python setup_mcp.py
 .\start-word-mcp.ps1 -HostAddress 0.0.0.0 -Port 8000 -Path /mcp
 ```
 
-如需关闭 DNS Rebinding Protection（仅限可信内网调试环境），可增加参数：
-
-```powershell
-.\start-word-mcp.ps1 -HostAddress 0.0.0.0 -Port 8000 -Path /mcp -DisableDnsRebindingProtection
-```
+默认即关闭 DNS Rebinding Protection（仅限可信内网使用）。双击脚本即可在无 DNS 保护模式下启动。
 
 ## Usage with Claude for Desktop
 
